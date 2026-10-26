@@ -1,0 +1,38 @@
+PRIYA RAGHAVAN
+Backend Engineer | Bengaluru, India
+priya.raghavan@example.com | github.com/example | linkedin.com/in/example
+
+SUMMARY
+Backend engineer with 4 years of experience building Python web services and
+internal tools. Comfortable owning a service end to end, from schema design to
+production rollout. Looking for a senior role with more architectural ownership.
+
+EXPERIENCE
+
+Backend Engineer — Nexora Logistics (Feb 2023 - Present)
+- Built APIs for internal tools used by the operations team
+- Migrated a legacy shipment service from Flask to FastAPI
+- Wrote background jobs to sync carrier tracking data every night
+- Added Redis caching to the rate-quote endpoint, which made it noticeably faster
+- Took part in on-call rotation and fixed production incidents
+- Reviewed pull requests for two junior engineers
+
+Software Engineer — Brightlane Technologies (Jul 2021 - Jan 2023)
+- Developed REST endpoints for a customer billing dashboard
+- Wrote PostgreSQL queries and added indexes to slow report pages
+- Set up CI with GitHub Actions to run tests on every pull request
+- Containerised three services with Docker for local development
+- Helped move file storage from the local disk to object storage
+
+SKILLS
+Languages: Python, SQL, JavaScript (basic), Bash
+Frameworks: FastAPI, Flask, SQLAlchemy, pytest
+Data: PostgreSQL, Redis, SQLite
+Tools: Docker, Git, GitHub Actions, Linux, Postman
+Practices: REST API design, unit testing, code review, Agile/Scrum
+
+EDUCATION
+B.E. Computer Science, Visvesvaraya Technological University, 2021
+
+CERTIFICATIONS
+Python for Everybody (Coursera, 2021)

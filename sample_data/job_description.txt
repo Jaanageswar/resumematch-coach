@@ -1,0 +1,42 @@
+Senior Backend Engineer (Platform)
+Arcadia Health — Bengaluru (Hybrid)
+
+ABOUT THE ROLE
+We are hiring a Senior Backend Engineer to join our Platform team. You will own
+core services that handle patient scheduling and claims processing at scale, and
+you will have real influence over our architecture as we move from a monolith to
+a service-oriented platform.
+
+WHAT YOU WILL DO
+- Design, build and operate Python microservices using FastAPI
+- Own services end to end, including deployment, monitoring and on-call
+- Lead the decomposition of our billing monolith into independent services
+- Define event-driven contracts between services using Apache Kafka
+- Build and maintain infrastructure as code for your team's services
+- Set up observability so the team can debug production quickly
+- Mentor mid-level engineers and raise the bar in design reviews
+
+REQUIRED QUALIFICATIONS
+- 5+ years building production backend services in Python
+- Deep experience with FastAPI or a comparable async Python framework
+- Strong PostgreSQL skills, including query optimisation and schema design
+- Production experience with Kubernetes: deployments, services, autoscaling
+- Infrastructure as code with Terraform
+- Hands-on AWS experience (EKS, RDS, S3, IAM, CloudWatch)
+- Experience designing event-driven systems with Kafka or a similar broker
+- Observability tooling: Prometheus, Grafana, distributed tracing (OpenTelemetry)
+- CI/CD pipeline ownership and automated deployment
+- Demonstrated experience mentoring engineers
+
+NICE TO HAVE
+- gRPC and Protocol Buffers for service-to-service communication
+- Redis for caching and distributed locking
+- Experience in healthcare, HIPAA, or another regulated domain
+- Load testing and capacity planning
+- Exposure to Go or Rust for performance-critical services
+
+WHAT WE LOOK FOR
+We care about measurable impact. Strong candidates can describe the scale they
+have worked at, the latency or cost improvements they delivered, and the
+production incidents they owned. We value engineers who write about trade-offs
+clearly and who leave systems better documented than they found them.

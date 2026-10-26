@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResumeMatch Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF8F3; --card:#FFF; --ink:#1C2434; --ink-soft:#5A6478;
+  --rule:#E4DDD1; --brass:#B07D2B; --sage:#2E6B52; --rust:#A33B2A; --amber:#C98A14;
+  --display:"Playfair Display",Georgia,serif; --body:"Inter",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --radius:10px; --shadow:0 1px 2px rgba(28,36,52,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 80px}
+
+/* header */
+header{border-bottom:1px solid var(--rule);margin-bottom:28px;padding:26px 0 18px;
+  display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--display);font-size:30px;margin:0;letter-spacing:-.01em}
+h1 .dot{color:var(--brass)}
+.tag{color:var(--ink-soft);font-size:13px;margin-top:2px}
+.dots{display:flex;gap:14px;flex-wrap:wrap}
+.pdot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft)}
+.pdot i{width:8px;height:8px;border-radius:50%;background:#C9C2B6;display:block}
+.pdot.on i{background:var(--sage)} .pdot.cool i{background:var(--amber)}
+.pdot.off i{background:#C9C2B6}
+
+/* layout */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow)}
+label.hd{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);
+  font-weight:600;margin-bottom:8px}
+textarea{width:100%;min-height:230px;border:1px solid var(--rule);border-radius:8px;
+  padding:11px;font-family:var(--body);font-size:13.5px;line-height:1.6;resize:vertical;
+  background:#FEFDFB;color:var(--ink)}
+textarea:focus{outline:2px solid var(--brass);outline-offset:1px;border-color:var(--brass)}
+.count{font-family:var(--mono);font-size:11px;color:var(--ink-soft);
+  text-align:right;margin-top:5px}
+.count.over{color:var(--rust);font-weight:600}
+
+/* controls */
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0 6px}
+button{font-family:var(--body);font-size:14px;cursor:pointer;border-radius:8px;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink);
+  padding:9px 15px;font-weight:500;transition:.15s}
+button:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.go{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600;
+  padding:11px 26px;display:flex;align-items:center;gap:9px;margin-left:auto}
+button.go:hover:not(:disabled){background:var(--brass);border-color:var(--brass);color:#fff}
+.chk{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft)}
+.file{font-size:13px;color:var(--ink-soft)}
+input[type=file]{display:none}
+
+/* banners */
+.banner{border-radius:8px;padding:11px 14px;margin:18px 0;font-size:13.5px;
+  border:1px solid;display:flex;gap:9px;align-items:flex-start}
+.banner.warn{background:#FDF6E7;border-color:var(--amber);color:#6B4A05}
+.banner.err{background:#FBEFEC;border-color:var(--rust);color:#73291C}
+.banner b{font-weight:600}
+
+/* results */
+#results{display:none;margin-top:10px}
+.sec{font-family:var(--display);font-size:20px;margin:30px 0 14px;
+  padding-bottom:7px;border-bottom:1px solid var(--rule)}
+.hero{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.ring{position:relative;width:132px;height:132px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center}
+.ring .num b{font-family:var(--display);font-size:38px;line-height:1}
+.ring .num span{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-soft);margin-top:3px}
+.mets{display:flex;gap:26px;flex-wrap:wrap;flex:1;min-width:240px}
+.met{min-width:92px}
+.met b{font-family:var(--display);font-size:25px;display:block;line-height:1.1}
+.met span{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft)}
+.met .track{height:4px;background:var(--rule);border-radius:99px;margin-top:7px;overflow:hidden}
+.met .track i{display:block;height:100%;border-radius:99px;background:var(--brass);
+  transition:width .7s ease-out}
+.verdict{font-family:var(--display);font-size:17px}
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:7px}
+
+/* coach */
+.coach{display:flex;align-items:center;gap:12px;flex:none}
+.coach svg{display:block}
+.bubble{position:relative;background:var(--card);border:1px solid var(--rule);
+  border-radius:12px;padding:9px 13px;font-size:13px;max-width:195px;box-shadow:var(--shadow)}
+.bubble:before{content:"";position:absolute;left:-6px;top:50%;margin-top:-5px;width:10px;
+  height:10px;background:var(--card);border-left:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);transform:rotate(45deg)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes pop{0%{transform:scale(.7);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.coach .face{animation:bob 3.2s ease-in-out infinite,pop .42s cubic-bezier(.34,1.56,.64,1)}
+.coach .eyes{animation:blink 5s infinite;transform-origin:center}
+@media(prefers-reduced-motion:reduce){.coach .face,.coach .eyes,.met .track i{animation:none}}
+
+/* pills */
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{font-size:12.5px;padding:4px 11px;border-radius:99px;border:1px solid;font-weight:500}
+.pill.y{color:var(--sage);border-color:#BCD6C8;background:#F1F7F3}
+.pill.n{color:var(--rust);border-color:#E6C6BF;background:#FBF2F0}
+.half{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:860px){.half{grid-template-columns:1fr}}
+.subhd{font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-soft);font-weight:600;margin-bottom:9px}
+
+/* bullets */
+.bul{border:1px solid var(--rule);border-radius:var(--radius);background:var(--card);
+  padding:14px;margin-bottom:11px;box-shadow:var(--shadow)}
+.bul .row{display:grid;grid-template-columns:62px 1fr;gap:11px;margin-bottom:9px}
+.bul .row:last-child{margin-bottom:0}
+.bul .k{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  padding-top:3px}
+.bul .k.b{color:var(--ink-soft)} .bul .k.a{color:var(--sage)} .bul .k.w{color:var(--brass)}
+.bul .v{font-size:13.5px}
+.bul .v.old{color:var(--ink-soft);text-decoration:line-through;
+  text-decoration-color:#D6CEC0}
+.bul .v.why{font-size:12.5px;color:var(--ink-soft);font-style:italic}
+ol.sug{padding-left:22px;margin:0}
+ol.sug li{margin-bottom:8px;font-size:14px}
+
+/* tables / details */
+details{margin-top:14px;border-top:1px solid var(--rule);padding-top:12px}
+summary{cursor:pointer;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-soft);font-weight:600}
+summary:hover{color:var(--brass)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px}
+th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-soft);border-bottom:1px solid var(--rule);padding:6px 8px;font-weight:600}
+td{padding:6px 8px;border-bottom:1px solid #F2EDE4;font-family:var(--mono);font-size:11.5px}
+td.t{font-family:var(--body);font-size:13px}
+tr.bad td{color:var(--rust)}
+.sc{display:inline-block;min-width:30px;text-align:center;font-weight:600;
+  padding:1px 7px;border-radius:99px;font-family:var(--body)}
+.empty{color:var(--ink-soft);font-size:13.5px;font-style:italic}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.how{font-size:13.5px;color:var(--ink-soft)}
+.how pre{font-family:var(--mono);font-size:11px;line-height:1.5;overflow-x:auto;
+  background:#FEFDFB;border:1px solid var(--rule);border-radius:8px;padding:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>ResumeMatch Coach<span class="dot">.</span></h1>
+    <div class="tag">Multi-agent resume analysis &middot; Analyst &rarr; Rewriter &rarr; 4-provider failover</div>
+  </div>
+  <div class="dots" id="dots"></div>
+</header>
+
+<details class="how" style="border:0;padding:0;margin-bottom:22px">
+  <summary>How it works</summary>
+  <pre>Analyst agent  ─┐
+                 ├─> ProviderRouter ─> NVIDIA ─> Cohere ─> OpenRouter ─> HuggingFace
+Rewriter agent ─┘                                               │ all fail
+                                                                ▼
+                                                   local keyword analyzer
+
+Each agent returns strict JSON, validated with Pydantic. A 429/401 moves on
+immediately; a 5xx or timeout gets one retry; 2 failures bench a provider for
+60s. Identical input is served from a SHA-256 cache. The app never errors out:
+worst case it degrades to keyword analysis and says so.</pre>
+</details>
+
+<div class="grid">
+  <div class="card">
+    <label class="hd" for="resume">
+      <span>Your resume</span>
+      <span class="file"><label for="up" style="cursor:pointer;color:var(--brass)">upload .pdf / .txt</label></span>
+    </label>
+    <input type="file" id="up" accept=".pdf,.txt,.md">
+    <textarea id="resume" placeholder="Paste your resume here, or upload a PDF above."></textarea>
+    <div class="count" id="rc">0 / 15,000</div>
+  </div>
+  <div class="card">
+    <label class="hd" for="job"><span>Job description</span></label>
+    <textarea id="job" placeholder="Paste the job posting here."></textarea>
+    <div class="count" id="jc">0 / 15,000</div>
+  </div>
+</div>
+
+<div class="bar">
+  <button id="sample">Load sample</button>
+  <button id="clear">Clear</button>
+  <label class="chk"><input type="checkbox" id="force"> Force re-analyze</label>
+  <button class="go" id="go">Analyze</button>
+</div>
+
+<div id="msg"></div>
+
+<section id="results">
+  <div class="sec" style="margin-top:22px">Result</div>
+  <div class="hero">
+    <div class="ring">
+      <svg width="132" height="132" viewBox="0 0 132 132">
+        <circle cx="66" cy="66" r="56" fill="none" stroke="var(--rule)" stroke-width="10"/>
+        <circle id="arc" cx="66" cy="66" r="56" fill="none" stroke="var(--brass)"
+                stroke-width="10" stroke-linecap="round" stroke-dasharray="0 999"
+                style="transition:stroke-dasharray .8s ease-out,stroke .3s"/>
+      </svg>
+      <div class="num"><b id="score">0</b><span>out of 100</span></div>
+    </div>
+    <div class="mets" id="mets"></div>
+    <div class="coach" id="coach"></div>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <div class="meta" id="meta"></div>
+
+  <div class="sec">Skills</div>
+  <div class="half">
+    <div><div class="subhd" id="mhd">Matched</div><div class="pills" id="matched"></div></div>
+    <div><div class="subhd" id="xhd">Missing</div><div class="pills" id="missing"></div></div>
+  </div>
+
+  <div class="sec">Rewritten bullets</div>
+  <div id="bullets"></div>
+  <div class="bar" style="margin-top:4px">
+    <button id="copy">Copy improved bullets</button>
+    <button id="dl">Download .md</button>
+    <button id="dlj">Download .json</button>
+  </div>
+
+  <div class="sec">Suggestions</div>
+  <ol class="sug" id="sugs"></ol>
+</section>
+
+<div class="sec">History</div>
+<div id="hist" class="empty">No analyses yet.</div>
+
+<details id="sysd">
+  <summary>System status &amp; provider log</summary>
+  <div id="sys"></div>
+</details>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const MAXC = 15000;
+let last = null;
+
+/* ---------- tiny API client; errors become readable sentences ---------- */
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  let body = null;
+  try { body = await res.json(); } catch (e) { /* 204 or non-JSON */ }
+  if (!res.ok) {
+    const detail = body && body.detail;
+    throw new Error(typeof detail === 'string' ? detail
+      : Array.isArray(detail) && detail[0] ? detail[0].msg
+      : `Request failed (HTTP ${res.status}).`);
+  }
+  return body;
+}
+
+/* ---------- the Coach: one SVG, seven moods ---------- */
+function moodFor(state, score, source) {
+  if (state === 'thinking') return 'thinking';
+  if (state === 'error' || source === 'local_fallback') return 'apologetic';
+  if (score >= 85) return 'delighted';
+  if (score >= 70) return 'pleased';
+  if (score >= 40) return 'hopeful';
+  return 'wincing';
+}
+const MOODS = {
+  thinking:   {c:'var(--brass)', mouth:'M 34 62 Q 48 62 62 62', eyes:'half', note:'Reading your resume…'},
+  resting:    {c:'var(--ink)',   mouth:'M 34 60 Q 48 64 62 60', eyes:'open', note:'Paste a resume and a job post.'},
+  wincing:    {c:'var(--rust)',  mouth:'M 34 64 Q 48 56 62 64', eyes:'shut', note:'Big gap — start with the bullets below.'},
+  hopeful:    {c:'var(--amber)', mouth:'M 34 60 Q 48 66 62 60', eyes:'open', note:null},
+  pleased:    {c:'var(--sage)',  mouth:'M 34 58 Q 48 70 62 58', eyes:'happy',note:'Strong match. Tighten those bullets.'},
+  delighted:  {c:'var(--sage)',  mouth:'M 34 56 Q 48 76 62 56', eyes:'star', note:"This one's ready to send."},
+  apologetic: {c:'var(--amber)', mouth:'M 34 62 Q 41 58 48 62 T 62 62', eyes:'flat', note:"AI's offline — keyword pass only."}
+};
+function eyeSVG(kind) {
+  if (kind === 'shut')  return '<path d="M26 46 q6 5 12 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M58 46 q6 5 12 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if (kind === 'happy') return '<path d="M26 48 q6 -7 12 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M58 48 q6 -7 12 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if (kind === 'flat')  return '<path d="M27 47 h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M59 47 h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>';
+  if (kind === 'half')  return '<path d="M26 47 q6 3 12 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M58 47 q6 3 12 0" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+  if (kind === 'star')  return ['32,40 34,46 40,48 34,50 32,56 30,50 24,48 30,46',
+                                '64,40 66,46 72,48 66,50 64,56 62,50 56,48 62,46']
+      .map(p => `<polygon points="${p}" fill="currentColor"/>`).join('');
+  return '<circle cx="32" cy="47" r="4" fill="currentColor"/><circle cx="64" cy="47" r="4" fill="currentColor"/>';
+}
+function drawCoach(state, score, source, missingCount) {
+  const key = moodFor(state, score, source), m = MOODS[key];
+  const note = m.note || `Close. ${missingCount} skill${missingCount === 1 ? '' : 's'} short.`;
+  const label = `Coach looks ${key}.` + (state === 'result' ? ` Score ${score} out of 100.` : '');
+  const dots = key === 'thinking'
+    ? '<circle cx="74" cy="22" r="2.6" fill="currentColor" opacity=".9"/><circle cx="82" cy="17" r="2" fill="currentColor" opacity=".6"/><circle cx="88" cy="13" r="1.5" fill="currentColor" opacity=".35"/>' : '';
+  $('coach').innerHTML = `
+    <svg class="face" width="76" height="76" viewBox="0 0 96 96" role="img"
+         aria-label="${label}" style="color:${m.c}">
+      <path d="M48 11 C70 11 86 27 86 48 C86 70 70 85 48 85 C26 85 10 70 10 48 C10 27 26 11 48 11 Z"
+            fill="var(--card)" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+      <g class="eyes">${eyeSVG(m.eyes)}</g>
+      <path d="${m.mouth}" stroke="currentColor" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+      ${dots}
+    </svg>
+    <div class="bubble">${esc(note)}</div>`;
+}
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const band = s => s >= 70 ? 'var(--sage)' : s >= 40 ? 'var(--amber)' : 'var(--rust)';
+const verdictOf = s => s >= 85 ? 'Excellent match' : s >= 70 ? 'Strong match'
+  : s >= 40 ? 'Partial match' : 'Weak match';
+
+/* ---------- char counters ---------- */
+function count(ta, out) {
+  const n = ta.value.trim().length;
+  out.textContent = `${n.toLocaleString()} / 15,000`;
+  out.className = 'count' + (n > MAXC ? ' over' : '');
+}
+['resume','job'].forEach((id, i) => $(id).addEventListener('input',
+  () => count($(id), $(i ? 'jc' : 'rc'))));
+
+function note(html, kind) {
+  $('msg').innerHTML = html ? `<div class="banner ${kind || 'warn'}">${html}</div>` : '';
+}
+
+/* ---------- render a result ---------- */
+function render(r) {
+  last = r;
+  $('results').style.display = 'block';
+  const c = band(r.score);
+  $('score').textContent = r.score;
+  $('score').style.color = c;
+  $('arc').setAttribute('stroke', c);
+  // r=56 -> circumference 351.86; leave the last 25% open for a 270deg dial
+  $('arc').setAttribute('stroke-dasharray', `${(r.score / 100) * 263.9} 999`);
+  $('verdict').textContent = verdictOf(r.score);
+  $('verdict').style.color = c;
+
+  const b = r.score_breakdown || {};
+  $('mets').innerHTML = ['skills','experience','keywords'].map(k => `
+    <div class="met"><b style="color:${band(b[k] || 0)}">${b[k] || 0}</b>
+      <span>${k}</span><div class="track"><i style="width:${b[k] || 0}%;
+      background:${band(b[k] || 0)}"></i></div></div>`).join('');
+
+  drawCoach('result', r.score, r.source, (r.missing_skills || []).length);
+
+  $('meta').textContent = [
+    r.source === 'local_fallback' ? 'local keyword analyzer'
+      : `${r.provider_used} / ${r.model_used}`,
+    r.cached ? 'cached' : 'fresh',
+    `${(r.latency_ms || 0).toLocaleString()} ms`,
+    r.source === 'local_fallback' ? 'no AI' : 'analyst + rewriter'
+  ].join('  ·  ');
+
+  $('mhd').textContent = `Matched (${(r.matched_skills || []).length})`;
+  $('xhd').textContent = `Missing (${(r.missing_skills || []).length})`;
+  const pills = (arr, cls) => arr.length
+    ? arr.map(s => `<span class="pill ${cls}">${esc(s)}</span>`).join('')
+    : '<span class="empty">none</span>';
+  $('matched').innerHTML = pills(r.matched_skills || [], 'y');
+  $('missing').innerHTML = pills(r.missing_skills || [], 'n');
+
+  const bl = r.rewritten_bullets || [];
+  $('bullets').innerHTML = bl.length ? bl.map(x => `
+    <div class="bul">
+      <div class="row"><div class="k b">Before</div><div class="v old">${esc(x.original)}</div></div>
+      <div class="row"><div class="k a">After</div><div class="v">${esc(x.improved)}</div></div>
+      <div class="row"><div class="k w">Why</div><div class="v why">${esc(x.reason)}</div></div>
+    </div>`).join('')
+    : `<div class="empty">${r.partial
+        ? 'The Rewriter agent failed, so scoring is shown without rewrites.'
+        : 'No rewrites available.'}</div>`;
+
+  $('sugs').innerHTML = (r.suggestions || []).map(s => `<li>${esc(s)}</li>`).join('')
+    || '<li class="empty">none</li>';
+
+  let warn = '';
+  if (r.source === 'local_fallback')
+    warn = '<span><b>AI providers unavailable.</b> Showing a basic keyword analysis — no rewritten bullets. Check System status below.</span>';
+  else if (r.partial)
+    warn = '<span><b>Partial result.</b> Scoring succeeded but the Rewriter agent failed, so bullet rewrites are missing.</span>';
+  note(warn, 'warn');
+  $('results').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+/* ---------- analyze ---------- */
+async function analyze() {
+  const resume = $('resume').value.trim(), job = $('job').value.trim();
+  if (resume.length < 30 || job.length < 30) {
+    return note('Please paste both a resume and a job description (at least 30 characters each).', 'err');
+  }
+  if (resume.length > MAXC || job.length > MAXC) {
+    return note(`Each input is capped at ${MAXC.toLocaleString()} characters.`, 'err');
+  }
+  note('');
+  $('go').disabled = true;
+  $('go').innerHTML = '<span class="spin"></span> Analyzing…';
+  $('results').style.display = 'block';
+  drawCoach('thinking', 0, null, 0);
+
+  try {
+    const r = await api('/analyze', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({resume_text: resume, job_text: job, force: $('force').checked})
+    });
+    render(r);
+    loadHistory(); loadStatus();
+  } catch (e) {
+    drawCoach('error', 0, null, 0);
+    note(`<span><b>Could not complete the analysis.</b> ${esc(e.message)}</span>`, 'err');
+  } finally {
+    $('go').disabled = false;
+    $('go').textContent = 'Analyze';
+  }
+}
+
+/* ---------- history ---------- */
+async function loadHistory() {
+  try {
+    const rows = await api('/history?limit=25');
+    if (!rows.length) { $('hist').className = 'empty';
+      $('hist').textContent = 'No analyses yet.'; return; }
+    $('hist').className = '';
+    $('hist').innerHTML = `<table><thead><tr><th>When</th><th>Resume</th>
+      <th>Job</th><th>Score</th><th>Served by</th><th></th></tr></thead><tbody>
+      ${rows.map(r => `<tr>
+        <td>${esc((r.created_at || '').slice(5, 16))}</td>
+        <td class="t">${esc((r.resume_label || '').slice(0, 30))}</td>
+        <td class="t">${esc((r.job_title || '').slice(0, 34))}</td>
+        <td><span class="sc" style="color:${band(r.score)};
+          background:${r.score >= 70 ? '#F1F7F3' : r.score >= 40 ? '#FDF6E7' : '#FBF2F0'}"
+          >${r.score}</span></td>
+        <td>${esc(r.source === 'local_fallback' ? 'local fallback' : r.provider_used || '-')}
+          ${r.partial ? ' <b style="color:var(--amber)">partial</b>' : ''}</td>
+        <td><button data-view="${r.id}" style="padding:3px 9px;font-size:12px">view</button>
+            <button data-del="${r.id}" style="padding:3px 9px;font-size:12px">delete</button></td>
+      </tr>`).join('')}</tbody></table>`;
+  } catch (e) { /* history is non-critical */ }
+}
+
+$('hist').addEventListener('click', async ev => {
+  const v = ev.target.dataset.view, d = ev.target.dataset.del;
+  try {
+    if (v) render(await api('/analysis/' + v));
+    if (d) { await api('/analysis/' + d, {method: 'DELETE'}); loadHistory(); }
+  } catch (e) { note(esc(e.message), 'err'); }
+});
+
+/* ---------- provider status ---------- */
+async function loadStatus() {
+  try {
+    const [st, logs] = await Promise.all([
+      api('/providers/status'), api('/providers/logs?limit=20')]);
+    $('dots').innerHTML = st.map(p => `<span class="pdot
+      ${!p.configured ? 'off' : p.cooling_down ? 'cool' : 'on'}"
+      title="${esc(p.model || 'no model')}${p.cooling_down
+        ? ' — cooling down ' + p.cooling_seconds_left + 's' : ''}">
+      <i></i>${esc(p.provider)}</span>`).join('');
+
+    $('sys').innerHTML = `<table><thead><tr><th>Provider</th><th>Model</th>
+      <th>Key</th><th>State</th><th>Attempts</th><th>Success</th><th>Avg</th>
+      </tr></thead><tbody>
+      ${st.map(p => `<tr><td class="t"><b>${esc(p.provider)}</b></td>
+        <td>${esc(p.model || '-')}</td>
+        <td>${p.configured ? 'yes' : '<span style="color:var(--rust)">missing</span>'}</td>
+        <td>${p.cooling_down
+          ? `<span style="color:var(--amber)">cooling ${p.cooling_seconds_left}s</span>`
+          : '<span style="color:var(--sage)">ready</span>'}</td>
+        <td>${p.attempts}</td>
+        <td>${p.success_rate == null ? '-' : Math.round(p.success_rate * 100) + '%'}</td>
+        <td>${p.avg_latency_ms == null ? '-' : p.avg_latency_ms + 'ms'}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="subhd" style="margin:18px 0 0">Last ${logs.length} attempts</div>
+      <table><thead><tr><th>When</th><th>Provider</th><th>Model</th><th>ms</th>
+      <th>Result</th></tr></thead><tbody>
+      ${logs.map(l => `<tr class="${l.success ? '' : 'bad'}">
+        <td>${esc((l.created_at || '').slice(11, 19))}</td>
+        <td>${esc(l.provider)}</td><td>${esc((l.model || '').slice(0, 34))}</td>
+        <td>${l.latency_ms == null ? '-' : l.latency_ms}</td>
+        <td>${l.success ? 'ok' : esc((l.error || 'failed').slice(0, 70))}</td>
+      </tr>`).join('')}</tbody></table>`;
+  } catch (e) { /* status is non-critical */ }
+}
+
+/* ---------- upload, sample, exports ---------- */
+$('up').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  note(`Extracting text from ${esc(f.name)}…`);
+  const fd = new FormData(); fd.append('file', f);
+  try {
+    const r = await api('/extract', {method: 'POST', body: fd});
+    $('resume').value = r.text; count($('resume'), $('rc'));
+    note(`Loaded <b>${esc(r.name || f.name)}</b> — ${r.chars.toLocaleString()} characters${r.pages ? `, ${r.pages} page(s)` : ''}.`);
+  } catch (e) { note(`<span><b>Could not read that file.</b> ${esc(e.message)}</span>`, 'err'); }
+  ev.target.value = '';
+});
+
+$('sample').addEventListener('click', async () => {
+  try {
+    const s = await api('/sample');
+    $('resume').value = s.resume; $('job').value = s.job;
+    count($('resume'), $('rc')); count($('job'), $('jc')); note('');
+  } catch (e) { note('Sample data is unavailable.', 'err'); }
+});
+
+$('clear').addEventListener('click', () => {
+  $('resume').value = ''; $('job').value = '';
+  count($('resume'), $('rc')); count($('job'), $('jc'));
+  $('results').style.display = 'none'; note('');
+});
+
+function improvedText() {
+  return (last.rewritten_bullets || []).map(b => '• ' + b.improved).join('\n');
+}
+$('copy').addEventListener('click', async () => {
+  if (!last) return;
+  try { await navigator.clipboard.writeText(improvedText());
+    $('copy').textContent = 'Copied'; setTimeout(() => $('copy').textContent = 'Copy improved bullets', 1400);
+  } catch (e) { note('Clipboard blocked by the browser — select the text manually.', 'warn'); }
+});
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+$('dl').addEventListener('click', () => {
+  if (!last) return;
+  const r = last;
+  download('resumematch.md', `# ResumeMatch Coach\n\n**Score: ${r.score}/100** — ${verdictOf(r.score)}\n\n`
+    + `Skills ${r.score_breakdown.skills} · Experience ${r.score_breakdown.experience} · Keywords ${r.score_breakdown.keywords}\n\n`
+    + `${r.summary}\n\n## Matched\n${(r.matched_skills||[]).map(s=>'- '+s).join('\n')}\n\n`
+    + `## Missing\n${(r.missing_skills||[]).map(s=>'- '+s).join('\n')}\n\n## Rewritten bullets\n`
+    + (r.rewritten_bullets||[]).map(b=>`\n**Before:** ${b.original}\n\n**After:** ${b.improved}\n\n*${b.reason}*\n`).join('')
+    + `\n## Suggestions\n${(r.suggestions||[]).map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\n`
+    + `---\nAnalyzed by ${r.source === 'local_fallback' ? 'local keyword analyzer' : r.provider_used + ' / ' + r.model_used}\n`,
+    'text/markdown');
+});
+$('dlj').addEventListener('click', () => {
+  if (last) download('resumematch.json', JSON.stringify(last, null, 2), 'application/json');
+});
+
+/* ---------- boot ---------- */
+drawCoach('resting', 0, null, 0);
+$('coach').style.display = 'none';
+$('go').addEventListener('click', analyze);
+loadHistory(); loadStatus();
+setInterval(loadStatus, 30000);
+$('sysd').addEventListener('toggle', e => { if (e.target.open) loadStatus(); });
+$('results').addEventListener('transitionend', () => {});
+// Coach is hidden until the first analysis, then stays visible.
+const showCoach = () => { $('coach').style.display = 'flex'; };
+$('go').addEventListener('click', showCoach);
+</script>
+</body>
+</html>

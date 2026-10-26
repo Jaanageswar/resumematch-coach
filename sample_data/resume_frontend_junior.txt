@@ -1,0 +1,37 @@
+AARAV MEHTA
+Frontend Developer | Pune, India
+aarav.mehta@example.com | github.com/example | linkedin.com/in/example
+
+SUMMARY
+Frontend developer with 1 year of experience building React interfaces for
+internal and customer-facing web apps. Comfortable turning Figma designs into
+working screens. Looking for a role with more ownership of the frontend stack.
+
+EXPERIENCE
+
+Frontend Developer - Brightpixel Studio (Jan 2025 - Present)
+- Worked on the analytics dashboard UI
+- Built reusable components for the design system
+- Fixed many bugs reported by the support team
+- Converted Figma designs into responsive React screens
+- Made the marketing site load faster
+- Added unit tests for a few components
+
+Web Development Intern - Kavi Digital (Jul 2024 - Dec 2024)
+- Built landing pages for client campaigns
+- Helped migrate a jQuery page to React
+- Wrote CSS for mobile layouts
+- Participated in daily standups and sprint planning
+
+SKILLS
+Languages: JavaScript, TypeScript, HTML, CSS
+Frameworks: React, Redux, Next.js, Tailwind, Vite
+Testing: Jest, React Testing Library
+Tools: Git, GitHub Actions, Figma, Chrome DevTools, npm
+Practices: responsive design, code review, Agile/Scrum
+
+EDUCATION
+B.Tech Information Technology, Savitribai Phule Pune University, 2023
+
+CERTIFICATIONS
+Meta Front-End Developer (Coursera, 2023)

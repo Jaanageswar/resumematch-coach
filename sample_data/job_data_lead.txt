@@ -1,0 +1,44 @@
+Principal Machine Learning Engineer
+Kestrel AI — Berlin (Remote within the EU)
+
+ABOUT THE ROLE
+Kestrel AI builds demand forecasting products for European retailers. We are
+hiring a Principal ML Engineer to own our modelling platform end to end and to
+set the technical direction for a team of six data scientists and ML engineers.
+
+WHAT YOU WILL DO
+- Set the technical direction for forecasting and recommendation models
+- Own the full lifecycle: feature engineering, training, deployment, monitoring
+- Lead the team of six and grow the engineers in it through review and mentoring
+- Move batch models to real-time inference behind a low-latency serving layer
+- Introduce a feature store so features are consistent in training and serving
+- Build retrieval-augmented generation into our forecasting assistant, using a
+  vector database over our product catalogue
+- Scale distributed training and tuning with Ray
+- Establish model governance and documentation for the EU AI Act
+
+REQUIRED QUALIFICATIONS
+- 8+ years in applied machine learning, with production ownership
+- Expert Python, with PyTorch or TensorFlow
+- Strong classical ML: scikit-learn, feature engineering, model evaluation
+- Production MLOps: MLflow, model registries, reproducible training
+- Orchestration with Airflow and transformations with dbt
+- Distributed data processing with Spark
+- Deployment on Kubernetes with infrastructure as code
+- Experience leading and mentoring a team of engineers
+- Rigorous experiment design and A/B testing
+
+NICE TO HAVE
+- LLMs in production: RAG, embeddings, vector databases, prompt evaluation
+- A feature store such as Feast or Tecton
+- Streaming ML on Kafka for real-time features
+- Distributed training with Ray or Dask
+- Google Cloud, in addition to or instead of AWS
+- Snowflake as a warehouse
+- Model governance under the EU AI Act
+
+WHAT WE LOOK FOR
+We care about models that ship and stay healthy. Strong candidates can describe
+a model they took to production, how they knew it was working, and what they did
+when it drifted. We value engineers who can explain a trade-off to a
+non-technical stakeholder and who raise the standard of everyone around them.

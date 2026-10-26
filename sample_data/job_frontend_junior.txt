@@ -1,0 +1,43 @@
+Frontend Engineer (Design Systems)
+Lumiq Labs — Pune (Hybrid, 3 days in office)
+
+ABOUT THE ROLE
+Lumiq Labs builds scheduling software used by 400+ clinics. We are hiring a
+Frontend Engineer to join the Web Platform team, which owns our component
+library and the performance and accessibility of every screen we ship.
+
+WHAT YOU WILL DO
+- Build and maintain components in our shared React design system
+- Document every component in Storybook so other teams can self-serve
+- Make our screens accessible to WCAG 2.1 AA, including keyboard and
+  screen-reader support
+- Own Core Web Vitals for the main app and hold the team to a performance budget
+- Write end-to-end tests with Playwright alongside unit tests
+- Consume GraphQL APIs and help shape the schema with backend engineers
+- Work inside our Turborepo monorepo and keep the build fast
+- Add internationalisation so we can launch in two more languages
+
+REQUIRED QUALIFICATIONS
+- 2+ years building production React applications
+- Strong TypeScript, including generics and discriminated unions
+- Deep CSS skills: layout, responsive design, and a utility framework
+- Demonstrated accessibility work (WCAG, ARIA, screen-reader testing)
+- Component-driven development with Storybook
+- End-to-end testing with Playwright or Cypress
+- Web performance profiling: Lighthouse, Core Web Vitals, bundle analysis
+- GraphQL on the client, with a cache such as Apollo or urql
+- Comfortable in a monorepo with shared tooling
+
+NICE TO HAVE
+- Internationalisation and localisation (i18n)
+- Node.js for a backend-for-frontend layer
+- Animation work with Framer Motion
+- Experience in healthcare or another regulated domain
+- Contributions to an open-source component library
+
+WHAT WE LOOK FOR
+We care about craft and about evidence. Strong candidates can point to a
+component they are proud of and explain the trade-offs they made, and can tell
+us what a page weighed before and after they worked on it. We value engineers
+who document as they go and who treat accessibility as part of the definition
+of done, not a later fix.

@@ -1,0 +1,37 @@
+RAHUL KRISHNAN
+Full Stack Developer | Chennai, India
+rahul.krishnan@example.com | github.com/example | linkedin.com/in/example
+
+SUMMARY
+Full stack developer with 5 years of experience shipping features across the
+frontend and backend of a B2B SaaS product. Has owned features end to end from
+API design through to the React screens that consume them.
+
+EXPERIENCE
+
+Full Stack Developer - Zentara Software (Apr 2022 - Present)
+- Built the customer onboarding flow end to end
+- Designed REST APIs for the billing module
+- Improved the dashboard load time
+- Containerised the dev environment with Docker
+- Set up CI/CD with GitHub Actions so tests run on every PR
+- Took part in on-call rotation for the platform team
+- Reviewed pull requests and onboarded two new joiners
+
+Software Engineer - Lumenware Technologies (Jul 2020 - Mar 2022)
+- Developed internal tools with Node.js and Express
+- Wrote PostgreSQL queries and added indexes to slow pages
+- Built a notification service backed by Redis
+- Migrated file uploads to S3
+
+SKILLS
+Languages: JavaScript, TypeScript, Python, SQL, Bash
+Frontend: React, Redux, Next.js, HTML, CSS, Tailwind
+Backend: Node.js, Express, FastAPI, REST API design, GraphQL
+Data: PostgreSQL, MongoDB, Redis, SQLite
+Cloud: AWS, Docker, GitHub Actions, CI/CD, Linux, Nginx
+Testing: Jest, pytest, unit testing, integration testing
+Practices: code review, Agile/Scrum, system design, mentoring
+
+EDUCATION
+B.E. Computer Science, Anna University, 2020

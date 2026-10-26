@@ -1,0 +1,44 @@
+Senior Full Stack Engineer
+Tessellate Cloud — Chennai (Hybrid)
+
+ABOUT THE ROLE
+Tessellate Cloud provides billing infrastructure to B2B SaaS companies. We are
+hiring a Senior Full Stack Engineer to own features end to end across our React
+front end and our Python and Node services, and to help us move from a single
+deployment to independently shipped services.
+
+WHAT YOU WILL DO
+- Design and ship features across React and our backend services
+- Own your services in production, including deployment, monitoring and on-call
+- Break apart our billing monolith into independently deployable services
+- Define event-driven contracts between services using Kafka
+- Deploy and operate workloads on Kubernetes
+- Manage your team's infrastructure as code with Terraform
+- Build out observability so the team can debug incidents quickly
+- Mentor mid-level engineers and raise the bar in design review
+
+REQUIRED QUALIFICATIONS
+- 5+ years building production web applications
+- Strong React and TypeScript on the front end
+- Strong backend skills in Python or Node.js, with REST API design
+- Solid PostgreSQL: schema design and query optimisation
+- Production experience with Docker and Kubernetes
+- Infrastructure as code with Terraform
+- Hands-on AWS (ECS or EKS, RDS, S3, IAM)
+- CI/CD pipeline ownership
+- Observability tooling: Prometheus, Grafana, distributed tracing
+- Experience mentoring engineers
+
+NICE TO HAVE
+- Event-driven systems with Kafka or a similar broker
+- gRPC for service-to-service communication
+- Multi-tenant architecture and tenant isolation
+- SOC 2 or another compliance regime
+- Redis for caching and distributed locking
+- Load testing and capacity planning
+
+WHAT WE LOOK FOR
+We care about measurable impact. Strong candidates can describe the scale they
+have operated at, the latency or cost improvements they delivered, and an
+incident they owned end to end. We value engineers who write clearly about
+trade-offs and who leave systems better documented than they found them.

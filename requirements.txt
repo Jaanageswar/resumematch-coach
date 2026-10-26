@@ -1,0 +1,14 @@
+# ResumeMatch Coach - backend dependencies
+# All pure-Python wheels on CPython 3.13: no compiler, no model download, no GPU.
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+pydantic==2.10.4
+python-dotenv==1.0.1
+pypdf==5.1.0
+python-multipart==0.0.20
+fpdf2==2.8.1          # tailored-resume PDF export
+
+# dev / test
+pytest==8.3.4

@@ -1,0 +1,44 @@
+# ---- SECRETS: never commit ----
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# ---- Local data ----
+data/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- Node / Vite ----
+node_modules/
+dist/
+dist-ssr/
+.vite/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Scratch ----
+*.log
+tmp/
+scratch/

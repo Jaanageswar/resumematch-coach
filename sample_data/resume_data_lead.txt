@@ -1,0 +1,43 @@
+LENA FISCHER
+Lead Data Scientist | Berlin, Germany
+lena.fischer@example.com | github.com/example | linkedin.com/in/example
+
+SUMMARY
+Data scientist and ML engineer with 9 years of experience taking models from
+notebook to production. Has led a team of four and owns the full lifecycle:
+feature engineering, training, deployment and monitoring. Interested in
+platform-level ML infrastructure roles.
+
+EXPERIENCE
+
+Lead Data Scientist - Nordlicht Analytics (Mar 2021 - Present)
+- Led the forecasting team and mentored four data scientists
+- Built demand forecasting models that improved planning accuracy
+- Moved model training from laptops to a scheduled Airflow pipeline
+- Set up monitoring so we could tell when a model drifted
+- Reduced training costs by moving jobs to spot instances
+- Partnered with engineering to serve models behind a REST API
+
+Senior Data Scientist - Helix Mobility (Jan 2018 - Feb 2021)
+- Developed churn prediction models for the subscriptions team
+- Built ETL jobs in Spark to prepare training data
+- Ran A/B tests to measure model impact on retention
+- Wrote dbt models for the analytics warehouse
+
+Data Analyst - Grauwerk GmbH (Sep 2016 - Dec 2017)
+- Built dashboards for the operations team
+- Wrote SQL queries for monthly reporting
+- Automated a manual Excel process
+
+SKILLS
+Languages: Python, SQL, R, Bash
+ML: scikit-learn, PyTorch, TensorFlow, pandas, numpy, machine learning,
+    deep learning, feature engineering
+Data: Spark, Airflow, dbt, Kafka, BigQuery, PostgreSQL, data pipeline,
+    data warehouse, ETL
+Cloud: AWS, Docker, Kubernetes, Terraform, CI/CD, MLflow
+Practices: A/B testing, experiment design, mentoring, technical leadership
+
+EDUCATION
+M.Sc. Statistics, Humboldt University of Berlin, 2016
+B.Sc. Mathematics, University of Hamburg, 2014
