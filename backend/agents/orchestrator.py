@@ -81,6 +81,7 @@ def analyze(
     resume_label: str | None = None,
     job_title: str | None = None,
     force: bool = False,
+    owner: str | None = None,
     router: ProviderRouter | None = None,
     settings: Settings | None = None,
     conn: sqlite3.Connection | None = None,
@@ -98,7 +99,7 @@ def analyze(
 
     # ---------------------------------------------------------------- cache
     if not force:
-        hit = cache.get_cached(resume_text, job_text, conn=conn)
+        hit = cache.get_cached(resume_text, job_text, conn=conn, owner=owner)
         if hit is not None:
             return AnalysisResult(
                 **hit, latency_ms=int((time.monotonic() - started) * 1000)
@@ -142,6 +143,7 @@ def analyze(
             partial=False,
             log_ids=log_ids,
             latency_ms=int((time.monotonic() - started) * 1000),
+            owner=owner,
             conn=conn,
         )
 
@@ -185,6 +187,7 @@ def analyze(
         partial=partial,
         log_ids=log_ids,
         latency_ms=int((time.monotonic() - started) * 1000),
+        owner=owner,
         conn=conn,
     )
 
@@ -209,11 +212,12 @@ def _persist_and_build(
     log_ids: list[int],
     latency_ms: int,
     conn: sqlite3.Connection | None,
+    owner: str | None = None,
 ) -> AnalysisResult:
     """Write the analysis, backfill the provider log FKs, return the result."""
     resume_id = db.insert_resume(resume_label, resume_text, conn=conn)
     job_id = db.insert_job(job_title, job_text, conn=conn)
-    input_hash = cache.input_hash(resume_text, job_text)
+    input_hash = cache.input_hash(resume_text, job_text, owner)
 
     analysis_id = db.upsert_analysis(
         resume_id=resume_id,
@@ -230,6 +234,7 @@ def _persist_and_build(
         model_used=model_used,
         source=source,
         partial=partial,
+        owner=owner,
         conn=conn,
     )
 

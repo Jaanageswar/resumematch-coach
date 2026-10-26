@@ -25,8 +25,6 @@ services:
     autoDeployTrigger: commit
     envVars:
       # ---- secrets: you type these into the Render dashboard ----------------
-      - key: APP_PASSWORD          # visitors must enter this to use the demo
-        sync: false
       - key: NVIDIA_API_KEY
         sync: false
       - key: COHERE_API_KEY
@@ -35,6 +33,14 @@ services:
         sync: false
       - key: HF_TOKEN              # optional; leave blank to skip Hugging Face
         sync: false
+
+      # ---- open to everyone, on purpose ----------------------------------
+      # Without this (and without an APP_PASSWORD) the app refuses to serve,
+      # so being public is always a deliberate choice. Each visitor still sees
+      # only their own analyses. To require a password instead, delete this
+      # and add APP_PASSWORD in the Render dashboard.
+      - key: PUBLIC_DEMO
+        value: "true"
 
       # ---- protection for a public URL ----------------------------------
       - key: RATE_LIMIT_PER_HOUR   # AI requests per visitor per hour

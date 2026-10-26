@@ -120,7 +120,7 @@ def _validate_text(label: str, text: str) -> str:
 
 
 @app.post("/analyze", response_model=AnalysisResult)
-def post_analyze(payload: AnalyzeRequest) -> AnalysisResult:
+def post_analyze(payload: AnalyzeRequest, request: Request) -> AnalysisResult:
     resume_text = _validate_text("Resume", payload.resume_text)
     job_text = _validate_text("Job description", payload.job_text)
 
@@ -133,6 +133,7 @@ def post_analyze(payload: AnalyzeRequest) -> AnalysisResult:
             force=payload.force,
             router=router,
             settings=settings,
+            owner=security.owner_of(request),
         )
     except InputTooShort as exc:
         raise HTTPException(422, str(exc)) from exc
@@ -161,28 +162,32 @@ async def post_extract(file: UploadFile = File(...)) -> ExtractResult:
 # --------------------------------------------------------------------------- #
 @app.get("/history", response_model=list[HistoryItem])
 def get_history(
+    request: Request,
     limit: int = Query(50, ge=1, le=200),
     job_title: str | None = None,
     min_score: int | None = Query(None, ge=0, le=100),
     source: str | None = Query(None, pattern="^(ai|local_fallback)$"),
 ) -> list[HistoryItem]:
     rows = db.list_analyses(
-        limit=limit, job_title=job_title, min_score=min_score, source=source
+        limit=limit, job_title=job_title, min_score=min_score, source=source,
+        owner=security.owner_of(request),
     )
     return [HistoryItem(**row) for row in rows]
 
 
 @app.get("/analysis/{analysis_id}", response_model=AnalysisResult)
-def get_analysis(analysis_id: int) -> AnalysisResult:
-    row = db.get_analysis(analysis_id)
+def get_analysis(analysis_id: int, request: Request) -> AnalysisResult:
+    # Another visitor's id is a plain 404, never a 403, so probing ids reveals
+    # nothing about which ones exist.
+    row = db.get_analysis(analysis_id, owner=security.owner_of(request))
     if row is None:
         raise HTTPException(404, f"No analysis with id {analysis_id}.")
     return AnalysisResult(**row, cached=True)
 
 
 @app.delete("/analysis/{analysis_id}", status_code=204, response_class=Response)
-def remove_analysis(analysis_id: int) -> Response:
-    if not db.delete_analysis(analysis_id):
+def remove_analysis(analysis_id: int, request: Request) -> Response:
+    if not db.delete_analysis(analysis_id, owner=security.owner_of(request)):
         raise HTTPException(404, f"No analysis with id {analysis_id}.")
     # 204 must carry no body, so return an empty Response rather than None.
     return Response(status_code=204)
@@ -192,11 +197,12 @@ def remove_analysis(analysis_id: int) -> Response:
 # compare
 # --------------------------------------------------------------------------- #
 @app.get("/compare", response_model=CompareResult)
-def compare(a: int = Query(...), b: int = Query(...)) -> CompareResult:
+def compare(request: Request, a: int = Query(...), b: int = Query(...)) -> CompareResult:
     if a == b:
         raise HTTPException(422, "Pick two different analyses to compare.")
 
-    first, second = db.get_analysis(a), db.get_analysis(b)
+    owner = security.owner_of(request)
+    first, second = db.get_analysis(a, owner=owner), db.get_analysis(b, owner=owner)
     for analysis_id, row in ((a, first), (b, second)):
         if row is None:
             raise HTTPException(404, f"No analysis with id {analysis_id}.")
@@ -223,7 +229,7 @@ def compare(a: int = Query(...), b: int = Query(...)) -> CompareResult:
     ).fetchone()
     trend = [
         TrendPoint(**point)
-        for point in db.score_history(int(job_row["job_id"]))
+        for point in db.score_history(int(job_row["job_id"]), owner=owner)
     ] if job_row else []
 
     return CompareResult(
@@ -238,7 +244,9 @@ def compare(a: int = Query(...), b: int = Query(...)) -> CompareResult:
 # --------------------------------------------------------------------------- #
 # Pip: chat and job suggestions
 # --------------------------------------------------------------------------- #
-def _resume_for(analysis_id: int | None, resume_text: str | None) -> tuple[str, dict | None, dict | None]:
+def _resume_for(
+    analysis_id: int | None, resume_text: str | None, owner: str | None = None
+) -> tuple[str, dict | None, dict | None]:
     """Resolve the resume an endpoint should work on.
 
     An analysis id wins, because it pins the exact text that was scored. A raw
@@ -247,8 +255,8 @@ def _resume_for(analysis_id: int | None, resume_text: str | None) -> tuple[str, 
     """
     analysis = sources = None
     if analysis_id is not None:
-        analysis = db.get_analysis(analysis_id)
-        sources = db.get_analysis_sources(analysis_id)
+        analysis = db.get_analysis(analysis_id, owner=owner)
+        sources = db.get_analysis_sources(analysis_id, owner=owner)
         if analysis is None or sources is None:
             raise HTTPException(404, f"No analysis with id {analysis_id}.")
         return sources["resume_text"], analysis, sources
@@ -256,7 +264,7 @@ def _resume_for(analysis_id: int | None, resume_text: str | None) -> tuple[str, 
 
 
 @app.post("/chat", response_model=ChatResponse)
-def post_chat(payload: ChatRequest) -> ChatResponse:
+def post_chat(payload: ChatRequest, request: Request) -> ChatResponse:
     if not payload.messages:
         raise HTTPException(422, "Say something to Pip first.")
     last = payload.messages[-1]
@@ -267,7 +275,8 @@ def post_chat(payload: ChatRequest) -> ChatResponse:
             422, f"That message is {len(last.content):,} characters; "
                  f"please keep it under {MAX_CHAT_MESSAGE:,}.")
 
-    resume_text, analysis, sources = _resume_for(payload.analysis_id, payload.resume_text)
+    resume_text, analysis, sources = _resume_for(
+        payload.analysis_id, payload.resume_text, security.owner_of(request))
     resume_text = resume_text[: settings.max_input_chars]
     known_jobs = jobs.cached(resume_text) if resume_text else None
 
@@ -282,8 +291,9 @@ def post_chat(payload: ChatRequest) -> ChatResponse:
 
 
 @app.post("/jobs", response_model=JobsResponse)
-def post_jobs(payload: JobsRequest) -> JobsResponse:
-    resume_text, _, _ = _resume_for(payload.analysis_id, payload.resume_text)
+def post_jobs(payload: JobsRequest, request: Request) -> JobsResponse:
+    resume_text, _, _ = _resume_for(
+        payload.analysis_id, payload.resume_text, security.owner_of(request))
     if len(resume_text) < 30:
         raise HTTPException(422, "Drop or paste a resume first, so Pip knows what to match.")
     return jobs.suggest(
@@ -297,15 +307,16 @@ def post_jobs(payload: JobsRequest) -> JobsResponse:
 # tailored resume export
 # --------------------------------------------------------------------------- #
 @app.get("/analysis/{analysis_id}/resume.pdf", include_in_schema=True)
-def tailored_resume_pdf(analysis_id: int) -> Response:
+def tailored_resume_pdf(analysis_id: int, request: Request) -> Response:
     """The user's resume with the Rewriter's improved bullets applied, as a PDF.
 
     This is an edit of their actual resume, not a report about it: each
     rewritten bullet replaces the line it came from, and the rest of the
     document is left exactly as they wrote it.
     """
-    analysis = db.get_analysis(analysis_id)
-    sources = db.get_analysis_sources(analysis_id)
+    owner = security.owner_of(request)
+    analysis = db.get_analysis(analysis_id, owner=owner)
+    sources = db.get_analysis_sources(analysis_id, owner=owner)
     if analysis is None or sources is None:
         raise HTTPException(404, f"No analysis with id {analysis_id}.")
 

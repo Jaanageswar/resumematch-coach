@@ -323,7 +323,7 @@ def test_pdf_endpoint_returns_an_attachment(client, monkeypatch):
     # The local fallback produces no bullets, so inject one the way the
     # Rewriter would have, and confirm the endpoint applies it.
     monkeypatch.setattr(main.db, "get_analysis",
-                        lambda i, conn=None: {**created, "rewritten_bullets": [BULLET]})
+                        lambda i, conn=None, owner=None: {**created, "rewritten_bullets": [BULLET]})
 
     res = client.get(f"/analysis/{created['id']}/resume.pdf")
     assert res.status_code == 200

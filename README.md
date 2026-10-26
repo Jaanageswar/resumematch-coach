@@ -104,24 +104,28 @@ FastAPI serving both the API and the built React UI. The repo includes a
 
    | Variable | What to enter |
    |---|---|
-   | `APP_PASSWORD` | A password visitors must type to use the demo |
    | `NVIDIA_API_KEY`, `COHERE_API_KEY`, `OPENROUTER_API_KEY` | Your provider keys |
    | `HF_TOKEN` | Optional — leave blank to skip Hugging Face |
 
 4. **Apply.** The first build takes a few minutes; you get an
-   `https://<name>.onrender.com` URL.
+   `https://<name>.onrender.com` URL that anyone can open.
 
-**Protection on a public URL.** Anyone with the link could otherwise spend your
-free API quota, so a deployment is locked down by default:
+**How a public deployment stays safe.** `render.yaml` sets `PUBLIC_DEMO=true`,
+so there is no password — but:
 
-- every route asks for `APP_PASSWORD` (the browser's own login prompt; any
-  username works), except `/health`, which Render's health check needs;
-- each visitor gets **30 AI requests an hour**, and the whole demo **300 a
-  day** (`RATE_LIMIT_PER_HOUR`, `DAILY_AI_CAP` in `render.yaml`);
-- if it is ever deployed without a password, it **refuses to serve** rather
-  than running open.
+- **Visitors use your keys, but can never see them.** The browser only talks
+  to your server; your server talks to the AI providers.
+- **Each visitor sees only their own work.** A random, HttpOnly cookie keeps
+  one person's resumes out of everyone else's History, PDF downloads and
+  Compare. Without this, any stranger could read other people's resumes.
+- **Quota is rationed:** 30 AI requests per visitor per hour and 300 per day
+  in total (`RATE_LIMIT_PER_HOUR`, `DAILY_AI_CAP`), so one person or bot cannot
+  drain the free tier for everyone.
+- **Being public is never an accident.** With neither `PUBLIC_DEMO` nor
+  `APP_PASSWORD` set, a deployment refuses to serve. To require a password
+  instead, delete `PUBLIC_DEMO` and set `APP_PASSWORD` in the dashboard.
 
-Locally none of this is active.
+Locally none of this is active, and History shows everything as before.
 
 **Free-tier caveats.** The service sleeps after 15 minutes idle, so the first
 visit then takes about 50 seconds. The disk is not persistent, so history
@@ -270,7 +274,7 @@ Degradation is independent at each stage:
 ## Testing
 
 ```bash
-.venv/Scripts/python -m pytest -q     # 128 tests
+.venv/Scripts/python -m pytest -q     # 138 tests
 ```
 
 All providers are mocked. **No test makes a network call or spends API quota.**
@@ -351,7 +355,7 @@ frontend-react/        React 18 + Vite UI
   src/styles.css       design tokens + the Coach's keyframes
 frontend/index.html    dependency-free fallback UI (no Node required)
 scripts/check_providers.py
-tests/                 128 tests, zero network
+tests/                 138 tests, zero network
 DESIGN.md  PHASES.md  HUGGINGFACE.md
 ```
 

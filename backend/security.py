@@ -11,9 +11,15 @@ every AI request spends the owner's free provider quota. So:
                  every request, including the app's fetch() calls, so the
                  frontend needs no changes. /health stays open because Render's
                  health checker cannot log in.
-- Fail closed    on Render with no APP_PASSWORD set, the app refuses to serve
-                 rather than running wide open. An accidentally public app is
-                 the expensive mistake; a locked one is a one-line fix.
+- PUBLIC_DEMO    "true" opens the app to everyone on purpose: no password,
+                 but the request limits below still apply.
+- Fail closed    on Render with neither APP_PASSWORD nor PUBLIC_DEMO set, the
+                 app refuses to serve rather than running wide open. Being
+                 public has to be a decision, not an accident.
+- Isolation      whenever the app is reachable by more than one person, each
+                 visitor gets a random cookie and sees only their OWN analyses.
+                 Without this, any stranger could open History and read - or
+                 download as PDF - other people's resumes.
 - RATE_LIMIT_PER_HOUR  AI requests allowed per visitor IP per rolling hour.
 - DAILY_AI_CAP         AI requests allowed across all visitors per UTC day.
 
@@ -26,6 +32,7 @@ from __future__ import annotations
 import base64
 import binascii
 import os
+import re
 import secrets
 import time
 from collections import deque
@@ -37,6 +44,8 @@ from fastapi.responses import JSONResponse
 
 # Only these spend AI quota. /extract, /history and friends are cheap.
 AI_PATHS = ("/analyze", "/chat", "/jobs")
+OWNER_COOKIE = "rmc_owner"
+_OWNER_FORMAT = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
 OPEN_PATHS = ("/health",)
 REALM = "ResumeMatch Coach demo"
 
@@ -51,15 +60,28 @@ def _int_env(name: str) -> int:
 @dataclass
 class SecurityConfig:
     password: str = ""
+    public: bool = False          # PUBLIC_DEMO: open to everyone on purpose
     on_render: bool = False
     rate_per_hour: int = 0        # 0 = unlimited
     daily_cap: int = 0            # 0 = unlimited
+
+    @property
+    def isolate(self) -> bool:
+        """Separate each visitor's data whenever more than one person can reach
+        the app. Locally (none of these set) everything stays shared, which is
+        what a single user on their own machine expects."""
+        return self.on_render or self.public or bool(self.password)
+
+
+def _bool_env(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def load() -> SecurityConfig:
     return SecurityConfig(
         password=os.getenv("APP_PASSWORD", "").strip(),
-        on_render=os.getenv("RENDER", "").strip().lower() == "true",
+        public=_bool_env("PUBLIC_DEMO"),
+        on_render=_bool_env("RENDER"),
         rate_per_hour=_int_env("RATE_LIMIT_PER_HOUR"),
         daily_cap=_int_env("DAILY_AI_CAP"),
     )
@@ -130,11 +152,12 @@ async def gate(request: Request, call_next):
     if path in OPEN_PATHS:
         return await call_next(request)
 
-    if cfg.on_render and not cfg.password:
+    if cfg.on_render and not cfg.password and not cfg.public:
         return JSONResponse(
             status_code=503,
-            content={"detail": "This deployment is locked because APP_PASSWORD is not "
-                               "set. Add it in the Render dashboard to unlock it."},
+            content={"detail": "This deployment is locked: set APP_PASSWORD to require "
+                               "a password, or PUBLIC_DEMO=true to open it to everyone, "
+                               "in the Render dashboard."},
         )
 
     if cfg.password and not _password_ok(request.headers.get("authorization"), cfg.password):
@@ -153,4 +176,28 @@ async def gate(request: Request, call_next):
             return JSONResponse(status_code=429, content={"detail": refusal},
                                 headers={"Retry-After": "3600"})
 
-    return await call_next(request)
+    # Per-visitor isolation: a random, unguessable id in an HttpOnly cookie.
+    # It is not a login - it only keeps one visitor's resumes out of another's
+    # History. Clearing cookies starts a fresh, empty history.
+    owner, issued = None, False
+    if cfg.isolate:
+        owner = request.cookies.get(OWNER_COOKIE, "")
+        if not _OWNER_FORMAT.match(owner):
+            owner, issued = secrets.token_urlsafe(18), True
+    request.state.owner = owner
+
+    response = await call_next(request)
+    if issued:
+        response.set_cookie(
+            OWNER_COOKIE, owner,
+            max_age=60 * 60 * 24 * 180,
+            httponly=True,                       # page scripts cannot read it
+            samesite="lax",
+            secure=request.url.scheme == "https",
+        )
+    return response
+
+
+def owner_of(request: Request) -> str | None:
+    """The visitor id for this request, or None when data is not isolated."""
+    return getattr(request.state, "owner", None)

@@ -55,6 +55,8 @@ CREATE TABLE IF NOT EXISTS analyses (
   model_used TEXT,
   source TEXT NOT NULL DEFAULT 'ai',
   partial INTEGER NOT NULL DEFAULT 0,
+  -- Visitor id when the app is public (see security.py); NULL locally.
+  owner TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -111,6 +113,15 @@ def init_db(conn: sqlite3.Connection | None = None) -> None:
     target = conn or get_conn()
     with _LOCK:
         target.executescript(SCHEMA)
+        # Databases created before per-visitor isolation lack the owner column.
+        # The index is created here rather than in SCHEMA because on such a
+        # database SCHEMA runs before the column exists.
+        columns = {row[1] for row in target.execute("PRAGMA table_info(analyses)")}
+        if "owner" not in columns:
+            target.execute("ALTER TABLE analyses ADD COLUMN owner TEXT")
+        target.execute(
+            "CREATE INDEX IF NOT EXISTS idx_analyses_owner ON analyses(owner, created_at DESC)"
+        )
         target.commit()
 
 
@@ -185,6 +196,7 @@ def upsert_analysis(
     model_used: str | None,
     source: str,
     partial: bool,
+    owner: str | None = None,
     conn: sqlite3.Connection | None = None,
 ) -> int:
     """Insert, or overwrite the row with this input_hash (a forced re-analyze).
@@ -207,6 +219,7 @@ def upsert_analysis(
         model_used,
         source,
         1 if partial else 0,
+        owner,
     )
     with transaction(conn) as c:
         cur = c.execute(
@@ -214,8 +227,9 @@ def upsert_analysis(
             INSERT INTO analyses (
               resume_id, job_id, input_hash, score, score_breakdown_json,
               matched_skills_json, missing_skills_json, rewritten_bullets_json,
-              suggestions_json, summary, provider_used, model_used, source, partial
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+              suggestions_json, summary, provider_used, model_used, source, partial,
+              owner
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(input_hash) DO UPDATE SET
               resume_id = excluded.resume_id,
               job_id = excluded.job_id,
@@ -230,6 +244,7 @@ def upsert_analysis(
               model_used = excluded.model_used,
               source = excluded.source,
               partial = excluded.partial,
+              owner = excluded.owner,
               created_at = datetime('now')
             RETURNING id
             """,
@@ -288,9 +303,24 @@ def attach_logs_to_analysis(
         )
 
 
-def delete_analysis(analysis_id: int, conn: sqlite3.Connection | None = None) -> bool:
+def _owned(owner: str | None, column: str = "a.owner") -> tuple[str, tuple]:
+    """SQL fragment restricting rows to one visitor.
+
+    owner=None means "not isolated" (local use): no restriction at all. Any
+    string, including one that matches nothing, restricts to exactly that
+    visitor, so a stranger's id can never widen what someone sees.
+    """
+    if owner is None:
+        return "", ()
+    return f" AND {column} = ?", (owner,)
+
+
+def delete_analysis(
+    analysis_id: int, conn: sqlite3.Connection | None = None, owner: str | None = None
+) -> bool:
+    clause, args = _owned(owner, "owner")
     with transaction(conn) as c:
-        cur = c.execute("DELETE FROM analyses WHERE id = ?", (analysis_id,))
+        cur = c.execute(f"DELETE FROM analyses WHERE id = ?{clause}", (analysis_id, *args))
         return cur.rowcount > 0
 
 
@@ -326,10 +356,14 @@ JOIN job_descriptions j ON j.id = a.job_id
 """
 
 
-def get_analysis(analysis_id: int, conn: sqlite3.Connection | None = None):
+def get_analysis(
+    analysis_id: int, conn: sqlite3.Connection | None = None, owner: str | None = None
+):
+    clause, args = _owned(owner)
     c = conn or get_conn()
     with _LOCK:
-        row = c.execute(_ANALYSIS_SELECT + " WHERE a.id = ?", (analysis_id,)).fetchone()
+        row = c.execute(_ANALYSIS_SELECT + f" WHERE a.id = ?{clause}",
+                        (analysis_id, *args)).fetchone()
     return row_to_analysis(row) if row else None
 
 
@@ -343,25 +377,28 @@ def get_analysis_by_hash(input_hash: str, conn: sqlite3.Connection | None = None
 
 
 def get_analysis_sources(
-    analysis_id: int, conn: sqlite3.Connection | None = None
+    analysis_id: int, conn: sqlite3.Connection | None = None, owner: str | None = None
 ) -> dict[str, Any] | None:
     """The original resume and job text behind one analysis.
 
     The analysis row stores the *result*; the PDF export needs the input it was
     computed from, so the rewrites can be applied back into it.
     """
+    clause, args = _owned(owner)
     c = conn or get_conn()
     with _LOCK:
+        # `clause` is fixed SQL text ("" or " AND a.owner = ?"); the owner
+        # value itself is always a bound parameter.
         row = c.execute(
-            """
+            f"""
             SELECT r.label AS resume_label, r.content AS resume_text,
                    j.title AS job_title,    j.content AS job_text
             FROM analyses a
             JOIN resumes r ON r.id = a.resume_id
             JOIN job_descriptions j ON j.id = a.job_id
-            WHERE a.id = ?
+            WHERE a.id = ?{clause}
             """,
-            (analysis_id,),
+            (analysis_id, *args),
         ).fetchone()
     return dict(row) if row else None
 
@@ -372,6 +409,7 @@ def list_analyses(
     job_title: str | None = None,
     min_score: int | None = None,
     source: str | None = None,
+    owner: str | None = None,
     conn: sqlite3.Connection | None = None,
 ) -> list[dict[str, Any]]:
     clauses: list[str] = []
@@ -382,6 +420,9 @@ def list_analyses(
     if min_score is not None:
         clauses.append("a.score >= ?")
         params.append(min_score)
+    if owner is not None:
+        clauses.append("a.owner = ?")
+        params.append(owner)
     if source:
         clauses.append("a.source = ?")
         params.append(source)
@@ -398,17 +439,20 @@ def list_analyses(
     return [row_to_analysis(r) for r in rows]
 
 
-def score_history(job_id: int, conn: sqlite3.Connection | None = None) -> list[dict[str, Any]]:
+def score_history(
+    job_id: int, conn: sqlite3.Connection | None = None, owner: str | None = None
+) -> list[dict[str, Any]]:
     """Score over time for one job - powers the Compare tab's trend chart."""
+    clause, args = _owned(owner)
     c = conn or get_conn()
     with _LOCK:
         rows = c.execute(
-            """
+            f"""
             SELECT a.id, a.score, a.created_at, r.label AS resume_label
             FROM analyses a JOIN resumes r ON r.id = a.resume_id
-            WHERE a.job_id = ? ORDER BY a.created_at ASC
+            WHERE a.job_id = ?{clause} ORDER BY a.created_at ASC
             """,
-            (job_id,),
+            (job_id, *args),
         ).fetchall()
     return [dict(r) for r in rows]
 

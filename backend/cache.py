@@ -32,16 +32,28 @@ def normalise(text: str) -> str:
     return _WHITESPACE.sub(" ", (text or "").strip()).lower()
 
 
-def input_hash(resume_text: str, job_text: str) -> str:
+def input_hash(resume_text: str, job_text: str, owner: str | None = None) -> str:
+    """Cache key for one (resume, job) pair - per visitor when the app is public.
+
+    The key is UNIQUE in the analyses table. Without the owner in it, two
+    strangers analysing the same texts would share one row, and the second
+    visitor's save would take the row over - deleting it from the first
+    visitor's history. Locally owner is None and the key is unchanged.
+    """
     joined = f"{normalise(resume_text)}||{normalise(job_text)}||{CACHE_VERSION}"
+    if owner:
+        joined += f"||{owner}"
     return hashlib.sha256(joined.encode("utf-8")).hexdigest()
 
 
 def get_cached(
-    resume_text: str, job_text: str, conn: sqlite3.Connection | None = None
+    resume_text: str,
+    job_text: str,
+    conn: sqlite3.Connection | None = None,
+    owner: str | None = None,
 ) -> dict[str, Any] | None:
     """Return the stored analysis for these inputs, or None."""
-    cached = db.get_analysis_by_hash(input_hash(resume_text, job_text), conn=conn)
+    cached = db.get_analysis_by_hash(input_hash(resume_text, job_text, owner), conn=conn)
     if cached is None:
         return None
     return {**cached, "cached": True}
