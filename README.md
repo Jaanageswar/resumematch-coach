@@ -89,6 +89,48 @@ cp .env.example .env                                      # add keys
 
 ---
 
+## Deploy a live demo (Render, free)
+
+GitHub Pages cannot run this app — it only serves static files, and the app
+needs its Python backend. Render's free tier runs it as one web service, with
+FastAPI serving both the API and the built React UI. The repo includes a
+[`render.yaml`](./render.yaml) Blueprint that does the setup.
+
+1. Sign in at [render.com](https://render.com) with GitHub, and allow it to
+   read this repository.
+2. **New → Blueprint**, pick this repo, and Render reads `render.yaml`.
+3. Render asks for the secrets. **Their values go into Render only — never
+   into Git:**
+
+   | Variable | What to enter |
+   |---|---|
+   | `APP_PASSWORD` | A password visitors must type to use the demo |
+   | `NVIDIA_API_KEY`, `COHERE_API_KEY`, `OPENROUTER_API_KEY` | Your provider keys |
+   | `HF_TOKEN` | Optional — leave blank to skip Hugging Face |
+
+4. **Apply.** The first build takes a few minutes; you get an
+   `https://<name>.onrender.com` URL.
+
+**Protection on a public URL.** Anyone with the link could otherwise spend your
+free API quota, so a deployment is locked down by default:
+
+- every route asks for `APP_PASSWORD` (the browser's own login prompt; any
+  username works), except `/health`, which Render's health check needs;
+- each visitor gets **30 AI requests an hour**, and the whole demo **300 a
+  day** (`RATE_LIMIT_PER_HOUR`, `DAILY_AI_CAP` in `render.yaml`);
+- if it is ever deployed without a password, it **refuses to serve** rather
+  than running open.
+
+Locally none of this is active.
+
+**Free-tier caveats.** The service sleeps after 15 minutes idle, so the first
+visit then takes about 50 seconds. The disk is not persistent, so history
+resets whenever it restarts or redeploys. Python is pinned to 3.13.5 in
+`.python-version` because Render now defaults to 3.14, which the pinned
+dependencies do not support yet.
+
+---
+
 ## Features
 
 - **Drop a resume anywhere on the page.** Pip runs over, catches it, reads it,
@@ -228,7 +270,7 @@ Degradation is independent at each stage:
 ## Testing
 
 ```bash
-.venv/Scripts/python -m pytest -q     # 108 tests
+.venv/Scripts/python -m pytest -q     # 128 tests
 ```
 
 All providers are mocked. **No test makes a network call or spends API quota.**
@@ -309,7 +351,7 @@ frontend-react/        React 18 + Vite UI
   src/styles.css       design tokens + the Coach's keyframes
 frontend/index.html    dependency-free fallback UI (no Node required)
 scripts/check_providers.py
-tests/                 108 tests, zero network
+tests/                 128 tests, zero network
 DESIGN.md  PHASES.md  HUGGINGFACE.md
 ```
 

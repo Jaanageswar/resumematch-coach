@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from . import chat, db, jobs
+from . import chat, db, jobs, security
 from .agents.orchestrator import InputTooShort, analyze
 from .config import ROOT, settings
 from .extract import ExtractionError, extract_text
@@ -48,6 +48,12 @@ app = FastAPI(
     description="Multi-agent resume analysis with provider failover.",
     lifespan=lifespan,
 )
+
+# Password gate and AI request limits for a public deployment. Inert locally:
+# with no APP_PASSWORD and no limits set, it passes every request straight
+# through. Registered before CORS so CORS stays the outer layer (Starlette runs
+# middleware in reverse order of registration).
+app.middleware("http")(security.gate)
 
 # The Vite dev server. Loopback origins only - this app is not meant to be
 # reachable from anywhere else.

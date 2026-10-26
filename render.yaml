@@ -1,0 +1,71 @@
+# Render Blueprint for ResumeMatch Coach.
+#
+# One web service: FastAPI serves both the API and the built React UI, so the
+# whole app is a single URL.
+#
+# SECRETS: every entry marked `sync: false` is entered in the Render dashboard
+# when you create the Blueprint. Their values are never stored in this file or
+# in the Git repository.
+
+services:
+  - type: web
+    name: resumematch-coach
+    runtime: python
+    plan: free
+    region: singapore          # nearest Render region to India
+    # Python deps, then build the React UI into frontend-react/dist, which
+    # FastAPI serves. Render's Python runtime includes Node and npm.
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      cd frontend-react && npm ci && npm run build
+    # Render routes traffic to $PORT (default 10000); 0.0.0.0 is required here,
+    # unlike locally where the app binds to loopback only.
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # ---- secrets: you type these into the Render dashboard ----------------
+      - key: APP_PASSWORD          # visitors must enter this to use the demo
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: COHERE_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: HF_TOKEN              # optional; leave blank to skip Hugging Face
+        sync: false
+
+      # ---- protection for a public URL ----------------------------------
+      - key: RATE_LIMIT_PER_HOUR   # AI requests per visitor per hour
+        value: "30"
+      - key: DAILY_AI_CAP          # AI requests per day across all visitors
+        value: "300"
+
+      # ---- non-secret settings (mirrors .env.example) --------------------
+      - key: PROVIDER_ORDER
+        value: nvidia,cohere,openrouter,huggingface
+      - key: NVIDIA_MODEL
+        value: minimaxai/minimax-m3.1-flash
+      - key: NVIDIA_FALLBACK_MODELS
+        value: nvidia/nemotron-3.5-lightning-30b-a3b,nvidia/nemotron-3-ultra-550b-a55b
+      - key: COHERE_MODEL
+        value: command-r-08-2024
+      - key: COHERE_FALLBACK_MODELS
+        value: command-a-03-2025
+      - key: OPENROUTER_MODEL
+        value: google/gemma-4-31b-it:free
+      - key: OPENROUTER_FALLBACK_MODELS
+        value: google/gemma-4-26b-a4b-it:free,thinkingmachines/inkling-small:free,liquid/lfm-2.5-2.6b:free
+      - key: HF_MODEL
+        value: openai/gpt-oss-120b
+      - key: REQUEST_TIMEOUT_SECONDS
+        value: "45"
+      - key: MAX_OUTPUT_TOKENS
+        value: "3000"
+      - key: MAX_INPUT_CHARS
+        value: "15000"
+      - key: BREAKER_FAILURE_THRESHOLD
+        value: "2"
+      - key: BREAKER_COOLDOWN_SECONDS
+        value: "60"
