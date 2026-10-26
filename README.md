@@ -3,6 +3,10 @@
 A multi-agent GenAI application that scores a resume against a job description,
 explains the gap, and rewrites the weak bullet points to close it.
 
+**Live demo: https://resumematch-coach.onrender.com** — no sign-up, and your
+analyses are visible only to you. It runs on free hosting, so the first load
+after a quiet spell can take up to a minute while it wakes.
+
 **The engineering claim: this app cannot show an error page.** Four LLM providers
 are tried in order; if all four are unreachable it falls back to a deterministic
 keyword analyzer and says so plainly in the UI.

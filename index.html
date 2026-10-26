@@ -1,0 +1,49 @@
+<!doctype html>
+<!--
+  GitHub Pages entry point - NOT part of the app.
+
+  GitHub Pages only serves static files, so it cannot run ResumeMatch Coach
+  (the app needs its Python backend and server-side API keys). This page just
+  forwards visitors from jaanageswar.github.io/resumematch-coach to the live
+  app on Render. The app's own UI is in frontend-react/.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ResumeMatch Coach</title>
+  <meta name="description" content="Opening the live ResumeMatch Coach app.">
+  <link rel="canonical" href="https://resumematch-coach.onrender.com/">
+  <meta http-equiv="refresh" content="0; url=https://resumematch-coach.onrender.com/">
+  <script>
+    // replace(), not assign(), so the Back button does not bounce here again.
+    window.location.replace("https://resumematch-coach.onrender.com/");
+  </script>
+  <style>
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: #F4F0E8; color: #2A2721;
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 460px; padding: 32px 20px; text-align: center; }
+    h1 { font: 600 28px/1.2 Georgia, serif; margin: 0 0 10px; }
+    a { color: #A6532F; font-weight: 600; }
+    p { margin: 8px 0; }
+    .soft { color: #6F6A5F; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ResumeMatch Coach</h1>
+    <p>Opening the live app&hellip;</p>
+    <p><a href="https://resumematch-coach.onrender.com/">Click here if nothing happens</a></p>
+    <p class="soft">
+      It runs on free hosting, so if nobody has used it for a while it can take
+      up to a minute to wake up.
+    </p>
+    <p class="soft">
+      <a href="https://github.com/Jaanageswar/resumematch-coach">Source code on GitHub</a>
+    </p>
+  </main>
+</body>
+</html>
