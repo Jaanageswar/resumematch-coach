@@ -53,6 +53,26 @@ function resultLine(r) {
   }[mood]
 }
 
+/**
+ * Where Pip stands while greeting a visitor or handling their resume.
+ *
+ * On wide screens the space above the resume card is the page headline, so
+ * standing there puts her speech bubble over "Your resume, matched to the
+ * job." - the most important words on the page. The space above the job card
+ * is empty, so she stands there instead. On narrow screens the cards stack and
+ * nothing is empty, so she stays by the resume card she is talking about.
+ */
+function intakeSpot() {
+  const wide = typeof window !== 'undefined' && window.innerWidth >= 900
+  return wide
+    ? { anchor: '[data-tour="job"]', side: 'top' }
+    : { anchor: '[data-tour="drop"]', side: 'top-right' }
+}
+
+/** True on the developer's own machine; false on the public deployment. */
+const IS_LOCAL = typeof window === 'undefined'
+  || ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
+
 const GREETING = {
   role: 'assistant',
   local: true,
@@ -407,13 +427,13 @@ export default function App() {
         case 'catching':
           return { hold: true, mood: 'excited', pose: 'catch', holding: 'paper' }
         case 'reading':
-          return { anchor: '[data-tour="drop"]', side: 'top-right', mood: 'reading',
+          return { ...intakeSpot(), mood: 'reading',
                    pose: 'read', holding: 'paper', speed: 2.5,
                    line: `Reading ${e.name}…` }
         case 'got': {
           const ready = job.trim().length >= 30
           return {
-            anchor: '[data-tour="drop"]', side: 'top-right', mood: 'pleased', pose: 'wave',
+            ...intakeSpot(), mood: 'pleased', pose: 'wave',
             holding: 'paper', speed: 2,
             line: `Got it - ${e.chars.toLocaleString()} characters${e.pages ? ` across ${e.pages} page${e.pages > 1 ? 's' : ''}` : ''}! `
               + (ready ? 'Shall I analyze it?' : 'Paste a job post to score it, or I can find jobs that fit.'),
@@ -431,7 +451,7 @@ export default function App() {
           return { mood: 'apologetic', pose: 'shrug', wander: false,
                    line: 'I can only read PDF or TXT files, sorry!' }
         case 'read-failed':
-          return { anchor: '[data-tour="drop"]', side: 'top-right', mood: 'apologetic',
+          return { ...intakeSpot(), mood: 'apologetic',
                    pose: 'shrug', line: e.text }
         default:
           break
@@ -477,7 +497,7 @@ export default function App() {
 
     if (!tourDone) {
       return {
-        anchor: '[data-tour="drop"]', side: 'top-right', mood: 'idle', pose: 'wave',
+        ...intakeSpot(), mood: 'idle', pose: 'wave',
         line: 'Hi, I’m Pip! Want a 20-second tour?',
         actions: [
           { label: 'Show me', primary: true, onClick: startTour },
@@ -727,7 +747,11 @@ or timeout gets one retry; two failures bench a provider for 60s. Identical
 input is served from cache. Job links are live searches on real boards - Pip
 never invents a posting.`}</pre>
           </details>
-          <p>Runs locally on your machine. Your resume never leaves it except to the AI providers you configured.</p>
+          <p>
+            {IS_LOCAL
+              ? 'Runs locally on your machine. Your resume never leaves it except to the AI providers you configured.'
+              : 'Public demo. Your resume is sent to this server and to AI providers to be analysed. Your analyses are visible only to you, and are cleared whenever the server restarts.'}
+          </p>
         </footer>
       </main>
 
